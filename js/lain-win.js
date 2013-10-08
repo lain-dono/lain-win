@@ -1,5 +1,5 @@
 var renderer = PIXI.autoDetectRenderer(600, 400);
-var stage = new PIXI.Stage(0x66FF99);
+var stage = new PIXI.Stage(0x66FF99, true);
 
 var Room = function(stage) {
 	var bg = PIXI.Texture.fromFrame('img/'+ rooms.classroom.bg +'.png');
@@ -14,8 +14,20 @@ var Room = function(stage) {
 
 var l = new AllLoader();
 
+var la = null;
+
 l.onEnd = function() {
-	var r = new Room(stage);
+	//var r = new Room(stage);
+	var d = new DreesRoom();
+	stage.addChild(d.bg);
+
+	la = new Lain();
+	la.idle.position.x = 300;
+	la.idle.position.y = 105;
+	stage.addChild(la.idle);
+
+	stage.addChild(d);
+
 	var el_loader = document.getElementById('loader');
 	el_loader.parentNode.removeChild(el_loader);
 	document.body.appendChild(renderer.view);
