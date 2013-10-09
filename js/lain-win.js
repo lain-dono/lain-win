@@ -19,7 +19,7 @@ var dRoom = null;
 
 l.onEnd = function() {
 	//var r = new Room(stage);
-	dRoom = new DreesRoom();
+	dRoom = new DressRoom();
 	stage.addChild(dRoom.bg);
 
 	la = new Lain();

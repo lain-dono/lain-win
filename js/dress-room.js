@@ -1,4 +1,4 @@
-var DreesRoom = function() {
+var DressRoom = function() {
 	PIXI.DisplayObjectContainer.call(this);
 
 	var bg = PIXI.Texture.fromFrame('img/'+ 128 +'.png');
@@ -15,17 +15,17 @@ var DreesRoom = function() {
 	}
 };
 
-DreesRoom.constructor = DreesRoom;
-DreesRoom.prototype = Object.create(PIXI.DisplayObjectContainer.prototype);
+DressRoom.constructor = DressRoom;
+DressRoom.prototype = Object.create(PIXI.DisplayObjectContainer.prototype);
 
-DreesRoom.prototype.hideOnly = function(name) {
+DressRoom.prototype.hideOnly = function(name) {
 	for(var i=0, len = this.children.length; i<len; i++) {
 		var obj = this.children[i];
 		obj.visible = obj.name != name;
 	}	
 };
 
-DreesRoom.prototype.onUp = function(c) {
+DressRoom.prototype.onUp = function(c) {
 	console.log(c, c.name);
 	var x = c.position.x + c.width/2;
 	var y = c.position.y + c.height/2;
@@ -38,7 +38,7 @@ DreesRoom.prototype.onUp = function(c) {
 	c.defaultPos();
 };
 
-DreesRoom.prototype.data = {
+DressRoom.prototype.data = {
 	sweater: {
 		img: 250,
 		x: 110,
