@@ -3,6 +3,28 @@ var Lain = function() {
 	this.idle = new PIXI.Sprite(idle);
 	this.idle.anchor.x = 0.5;
 	this.idle.anchor.y = 0;
+	this.idle.buttonMode = true;
+	this.idle.setInteractive(true);
+	this.idle.mousedown = function() {
+		this.drag = true;
+		console.warn('mouseDOWN');
+	};
+	this.idle.mouseup = function() {
+		this.drag = false;
+		console.warn('mouseUP');
+	};
+	var that = this;
+	this.idle.mouseout = function() {
+		if(this.drag) {
+			console.warn('mouseupoutside');
+			that.setUniform('nude');
+			// FIXME: ugly
+			dRoom.hideOnly('nude');
+		} else {
+			console.warn('NO');
+		}
+	};
+	this.uniform = 'nude';
 };
 
 Lain.prototype.contains = function(x, y) {
@@ -18,6 +40,7 @@ Lain.prototype.contains = function(x, y) {
 
 Lain.prototype.setUniform = function(name) {
 	if(lain.hasOwnProperty(name)) {
+		this.uniform = name;
 		var idle = PIXI.Texture.fromFrame('img/'+ lain[name].idle +'.png');
 		this.idle.setTexture(idle);
 	}
@@ -38,6 +61,9 @@ var lain = {
 	},
 	sweater: {
 		idle: 246,
+	},
+	ufo: {
+		idle: 225,
 	},
 };
 

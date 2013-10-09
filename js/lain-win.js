@@ -15,18 +15,19 @@ var Room = function(stage) {
 var l = new AllLoader();
 
 var la = null;
+var dRoom = null;
 
 l.onEnd = function() {
 	//var r = new Room(stage);
-	var d = new DreesRoom();
-	stage.addChild(d.bg);
+	dRoom = new DreesRoom();
+	stage.addChild(dRoom.bg);
 
 	la = new Lain();
 	la.idle.position.x = 300;
 	la.idle.position.y = 105;
 	stage.addChild(la.idle);
 
-	stage.addChild(d);
+	stage.addChild(dRoom);
 
 	var el_loader = document.getElementById('loader');
 	el_loader.parentNode.removeChild(el_loader);
