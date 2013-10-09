@@ -7,10 +7,14 @@ var Lain = function() {
 	this.idle.setInteractive(true);
 	this.idle.mousedown = function() {
 		this.drag = true;
+		this._t = setTimeout((function() {
+			this.drag = false;
+		}).bind(this), 2000);
 		console.warn('mouseDOWN');
 	};
 	this.idle.mouseup = function() {
 		this.drag = false;
+		clearTimeout(this._t);
 		console.warn('mouseUP');
 	};
 	var that = this;
