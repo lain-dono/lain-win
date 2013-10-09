@@ -30,10 +30,10 @@ DressRoom.prototype.onUp = function(c) {
 	var x = c.position.x + c.width/2;
 	var y = c.position.y + c.height/2;
 
-	if(la.contains(x, y)) {
+	if(Lain.contains(x, y)) {
 		console.warn('contains', x, y);
 		this.hideOnly(c.name);
-		la.setUniform(c.name);
+		Lain.setUniform(c.name);
 	}
 	c.defaultPos();
 };
@@ -83,6 +83,7 @@ var Clothes = function(name, img, x, y) {
 	this.img = img;
 	this.x = x;
 	this.y = y;
+	console.warn('Clothes',name, img, x, y);
 
 	var texture = PIXI.Texture.fromFrame('img/'+ img +'.png');
 

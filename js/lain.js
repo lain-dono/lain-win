@@ -1,52 +1,127 @@
-var Lain = function() {
-	var idle = PIXI.Texture.fromFrame('img/'+ lain.nude.idle +'.png');
-	this.idle = new PIXI.Sprite(idle);
-	this.idle.anchor.x = 0.5;
-	this.idle.anchor.y = 0;
-	this.idle.buttonMode = true;
-	this.idle.setInteractive(true);
-	this.idle.mousedown = function() {
+var Lain = new function() {
+	PIXI.DisplayObjectContainer.call(this);
+
+	this.data = {};
+
+	for(var index in lain) { 
+		if (lain.hasOwnProperty(index)) {
+			var attr = lain[index];
+			console.log(index, attr);
+
+			var idle_t = PIXI.Texture.fromFrame('img/'+ attr.idle +'.png');
+			var obj = {
+				idle: new PIXI.Sprite(idle_t),
+				turnRight: this.createMovieClip(attr.turnRight),
+				moveRight: this.createMovieClip(attr.moveRight),
+				moveLeft: this.createMovieClip(attr.moveLeft),
+			};
+			obj.turnRight.loop = false;
+			obj.turnRight.onComplete = (function(that, index) {
+				return function() {
+					that.setUniform(index, 'moveRight');
+				};
+			})(this, index);
+
+			this.addChild(obj.idle);
+			obj.idle.visible = false;
+			this.data[index] = obj;
+		}
+	}
+	this.type = 'idle';
+	this.setUniform('nude');
+
+	this.buttonMode = true;
+	this.setInteractive(true);
+
+	this.mousedown = function() {
 		this.drag = true;
 		this._t = setTimeout((function() {
 			this.drag = false;
 		}).bind(this), 2000);
 		console.warn('mouseDOWN');
 	};
-	this.idle.mouseup = function() {
+	this.mouseup = function() {
 		this.drag = false;
 		clearTimeout(this._t);
 		console.warn('mouseUP');
 	};
-	var that = this;
-	this.idle.mouseout = function() {
+	this.mouseout = function() {
 		if(this.drag) {
 			console.warn('mouseupoutside');
-			that.setUniform('nude');
+			this.setUniform('nude');
 			// FIXME: ugly
 			dRoom.hideOnly('nude');
 		} else {
 			console.warn('NO');
 		}
 	};
-	this.uniform = 'nude';
+};
+
+Lain.constructor = Lain;
+Lain.prototype = Object.create(PIXI.DisplayObjectContainer.prototype);
+
+Lain.prototype.createMovieClip = function(arr) {
+	var textures = [];
+	console.group('createMovieClip');
+	console.log(arr);
+
+	var i,len,t;
+	for(i=0, len=arr.length; i<len; i++) {
+		t = arr[i];
+		console.log(t);
+		t = PIXI.Texture.fromFrame('img/'+ t +'.png');
+		textures.push(t);
+	}
+
+	var clip = new PIXI.MovieClip(textures);
+	clip.animationSpeed = 0.05;
+	this.addChild(clip);
+	console.groupEnd();
+	return clip;
+};
+
+Lain.prototype.getHitArea = function(re) {
+	var obj = this.uniform;
+	var x=0,y=0;
+	if(!re) {
+		x = this.position.x;
+		y = this.position.y;
+	}
+	return new PIXI.Rectangle(
+		x - obj.anchor.x * obj.width,
+		y - obj.anchor.y * obj.height,
+		obj.width,
+		obj.height);
 };
 
 Lain.prototype.contains = function(x, y) {
-	var obj = this.idle;
-	var area = new PIXI.Rectangle(
-			obj.position.x - obj.anchor.x * obj.width,
-			obj.position.y - obj.anchor.y * obj.height,
-			obj.width,
-			obj.height);
-	console.log(area, x, y, obj.position);
+	var area = this.getHitArea();
+	console.log(area, x, y);
 	return area.contains(x, y);
 };
 
-Lain.prototype.setUniform = function(name) {
+Lain.prototype.setUniform = function(name, type) {
 	if(lain.hasOwnProperty(name)) {
-		this.uniform = name;
-		var idle = PIXI.Texture.fromFrame('img/'+ lain[name].idle +'.png');
-		this.idle.setTexture(idle);
+		this.name = name || this.name;
+		this.type = type || this.type;
+
+		for(var index in this.data) { 
+			if (this.data.hasOwnProperty(index)) {
+				var obj = this.data[index];
+				var visible = index == name;
+				for(var i in obj) { 
+					if (obj.hasOwnProperty(i)) {
+						var el = obj[i];
+						el.visible = visible && (this.type == i);
+						if(el.visible && el.gotoAndPlay) {
+							el.gotoAndPlay(0);
+						}
+						this.uniform = el;
+					}
+				}
+			}
+		}
+		this.hitArea = this.getHitArea(true);
 	}
 };
 

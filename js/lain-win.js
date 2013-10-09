@@ -18,14 +18,24 @@ var la = null;
 var dRoom = null;
 
 l.onEnd = function() {
+	console.warn('END');
 	//var r = new Room(stage);
 	dRoom = new DressRoom();
 	stage.addChild(dRoom.bg);
+	console.warn('dRoom');
 
-	la = new Lain();
-	la.idle.position.x = 300;
-	la.idle.position.y = 105;
-	stage.addChild(la.idle);
+	//la = new Lain();
+	console.warn('lain');
+
+	Lain.position.x = 300-100;
+	Lain.position.y = 105;
+	stage.addChild(Lain);
+/*
+	xx = new LainMovable('nude', lain.nude);
+	stage.addChild(xx.moveRight);
+	xx.moveRight.animationSpeed = 0.04;
+	xx.moveRight.play();
+	*/
 
 	stage.addChild(dRoom);
 
