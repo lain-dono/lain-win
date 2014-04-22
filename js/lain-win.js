@@ -1,6 +1,9 @@
 var renderer = PIXI.autoDetectRenderer(600, 400);
 var stage = new PIXI.Stage(0x66FF99, true);
 
+// one pixel
+(new PIXI.ImageLoader('img/0.png')).load();
+
 var Lain = null;
 //var dRoom = null;
 
@@ -21,14 +24,16 @@ var AllLoader = function() {
 
 		console.warn('lain');
 
+		InitAnimations();
+
 		Lain = new _Lain();
 
 		Lain.position.x = 300-100;
 		Lain.position.y = 105;
 
-		Room.initAll(stage);
 
-		//stage.addChild(Lain);
+		stage.addChild(Lain);
+		Room.initAll(stage);
 
 		//stage.addChild(dRoom);
 
@@ -47,10 +52,12 @@ var AllLoader = function() {
 			loader.addEventListener('loaded', (function(i, name, scope) {
 				return function(event) {
 					var lo = event.content;
-					console.log('loaded[%d] %s',
-						(++count) - start,
+					count++;
+					/*console.log('loaded[%d] %s',
+						(count) - start,
 						name,
 						lo.texture);
+						*/
 					if(count > end) {
 						console.groupEnd();
 						scope.onEnd.call(scope); 

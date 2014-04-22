@@ -1,98 +1,47 @@
 var _Lain = function() {
 	PIXI.DisplayObjectContainer.call(this);
+	PIXI.EventTarget.call(this);
+	this.setUniform('nude', 'idle');
 
-	this.data = {};
-
-	for(var index in lain) { 
-		if (lain.hasOwnProperty(index)) {
-			var attr = lain[index].animations;
-			console.log(index, attr);
-			if(!attr) continue;
-
-			var idle_t = PIXI.Texture.fromFrame('img/'+ attr.idle +'.png');
-			var obj = {
-				idle: new PIXI.Sprite(idle_t),
-				turnRight: this.createMovieClip(attr.turnRight),
-				moveRight: this.createMovieClip(attr.moveRight),
-				moveLeft: this.createMovieClip(attr.moveLeft),
-			};
-
-			obj.turnRight.loop = false;
-			obj.turnRight.onComplete = (function(that, index) {
-				return function() {
-					that.setUniform(index, 'moveRight');
-				};
-			})(this, index);
-
-			this.addChild(obj.idle);
-			obj.idle.visible = false;
-			this.data[index] = obj;
-
-			if(attr.dress && attr.dress.stick_to) {
-				var stick_t = PIXI.Texture.fromFrame('img/'+ attr.dress.img +'.png');
-				obj.stick = new PIXI.Sprite(stick_t);
-				obj.stick.x = attr.dress.stick_to.x;
-				obj.stick.y = attr.dress.stick_to.y;
-				this.addChild(obj.stick);
-			}
-		}
-	}
-
-	this.type = 'idle';
-	this.setUniform('nude');
-
-	this.buttonMode = true;
-	this.setInteractive(true);
-
-	this.mousedown = function() {
-		this.drag = true;
-		this._t = setTimeout((function() {
-			this.drag = false;
-		}).bind(this), 2000);
-		console.warn('mouseDOWN');
-	};
-	this.mouseup = function() {
-		this.drag = false;
-		clearTimeout(this._t);
-		console.warn('mouseUP');
-	};
-	this.mouseout = function() {
-		if(this.drag) {
-			console.warn('mouseupoutside');
-			this.setUniform('nude');
-			// FIXME: ugly
-			//dRoom.hideOnly('nude');
-		} else {
-			console.warn('NO');
-		}
-	};
+	this.to_room='';
 };
 
-_Lain.prototype = Object.create(PIXI.DisplayObjectContainer.prototype);
 _Lain.constructor = _Lain;
+_Lain.prototype = Object.create(PIXI.DisplayObjectContainer.prototype);
 
-_Lain.prototype.createMovieClip = function(arr) {
-	var textures = [];
-	console.groupCollapsed('createMovieClip');
-	console.log(arr);
+_Lain.prototype.goToRight = function() {
+	this.uniform.turnRight.loop = false;
+	this.uniform.turnRight.onComplete = (function(that) {
+		return function() {
+			that.setAnimation('moveRight');
+		};
+	})(this);
 
-	var i,len,t;
-	for(i=0, len=arr.length; i<len; i++) {
-		t = arr[i];
-		console.log(t);
-		t = PIXI.Texture.fromFrame('img/'+ t +'.png');
-		textures.push(t);
+	this.setAnimation('turnRight');
+
+};
+
+_Lain.prototype.setAnimation = function(type) {
+	this.type = type || this.type || 'idle';
+
+	if(this.animation) {
+		this.removeChild(this.animation);
 	}
 
-	var clip = new PIXI.MovieClip(textures);
-	clip.animationSpeed = 0.05;
-	this.addChild(clip);
-	console.groupEnd();
-	return clip;
-};
+	this.animation = this.uniform[this.type];
+	this.addChild(this.animation);
+
+	// На случай ежели это спрайт
+	if(this.animation.gotoAndPlay) {
+		this.animation.gotoAndPlay(0);
+	}
+}
 
 _Lain.prototype.getHitArea = function(re) {
-	var obj = this.uniform;
+	//var obj = this.uniform;
+	//var obj = this.animation;
+	var obj = this.uniform['idle'];
+	console.log('getHitArea', obj);
 	var x=0,y=0;
 	if(!re) {
 		x = this.position.x;
@@ -111,32 +60,74 @@ _Lain.prototype.contains = function(x, y) {
 	return area.contains(x, y);
 };
 
+
 _Lain.prototype.setUniform = function(name, type) {
 	if(lain.hasOwnProperty(name) && lain[name].animations) {
 		console.log('setUniform', name, type);
-		this.name = name || this.name;
-		this.type = type || this.type;
+		this.name = name || this.name || 'nude';
+		//this.type = type || this.type || 'idle';
 
+		this.uniform = lain[name].animations;
+		this.setAnimation(type);
 
-		for(var index in this.data) {
-			if (this.data.hasOwnProperty(index)) {
-				var obj = this.data[index];
-				var visible = index == name;
-				for(var i in obj) { 
-					if (obj.hasOwnProperty(i)) {
-						var el = obj[i];
-						el.visible = visible && (this.type == i);
-						if(el.visible && el.gotoAndPlay) {
-							el.gotoAndPlay(0);
-						}
-						this.uniform = el;
-					}
-				}
-			}
-		}
 		this.hitArea = this.getHitArea(true);
 	} else {
 		console.error('fail setUniform', name, type);
+	}
+};
+
+_Lain.prototype.updateTransform = function() {
+	PIXI.DisplayObjectContainer.prototype.updateTransform.call(this);
+	if(!this.type) return;
+	if(this.type === 'moveLeft') {
+		this.x -= 4;
+		//if(this.x < -100) this.emit({type:'exitToDressRoom', content:this});
+	}
+	if(this.type === 'moveRight') {
+		this.x += 4;
+		if(this.x > 600) this.emit({type:'exit', content:this});
+	}
+};
+
+var InitAnimations = function() {
+	for(var index in lain) {
+		if (lain.hasOwnProperty(index)) {
+			var animations = lain[index].animations;
+			var dress = lain[index].dress;
+
+			for(var anim_key in animations) {
+				if(animations.hasOwnProperty(anim_key)) {
+					var anim = animations[anim_key];
+
+					if(typeof(anim) === 'number') {
+						// Вместо анимации одна текстура
+						console.log('is nuber');
+						var texture = PIXI.Texture.fromFrame('img/'+ anim +'.png');
+						anim = new PIXI.Sprite(texture);
+					} else {
+						// Заполняем анимацию
+						console.log('maybe array');
+
+						var textures = [];
+
+						var i,len,t;
+						for(i=0, len=anim.length; i<len; i++) {
+							t = anim[i];
+							t = PIXI.Texture.fromFrame('img/'+ t +'.png');
+							textures.push(t);
+						}
+
+						var clip = new PIXI.MovieClip(textures);
+						clip.animationSpeed = 0.05;
+
+						anim = clip;
+					}
+
+					lain[index].animations[anim_key] = anim;
+
+				}
+			}
+		}
 	}
 };
 
