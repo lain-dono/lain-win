@@ -1,49 +1,69 @@
 var renderer = PIXI.autoDetectRenderer(600, 400);
 var stage = new PIXI.Stage(0x66FF99, true);
 
-var Room = function(stage) {
-	var bg = PIXI.Texture.fromFrame('img/'+ rooms.classroom.bg +'.png');
-	var front = PIXI.Texture.fromFrame('img/'+ rooms.classroom.front +'.png');
+var Lain = null;
+//var dRoom = null;
 
-	this.bg = new PIXI.Sprite(bg);
-	this.front = new PIXI.Sprite(front);
+// Начальная загрузка текстур
+var AllLoader = function() {
+	console.groupCollapsed('Load Textures');
+	var start = 128;
+	var end = 654;
+	var crossorigin = false;
 
-	stage.addChild(this.bg);
-	stage.addChild(this.front);
+	var count = start;
+
+	this.onEnd = function() {
+		console.warn('END');
+		//dRoom = new DressRoom();
+		//stage.addChild(dRoom.bg);
+		//console.warn('dRoom');
+
+		console.warn('lain');
+
+		Lain = new _Lain();
+
+		Lain.position.x = 300-100;
+		Lain.position.y = 105;
+
+		Room.initAll(stage);
+
+		//stage.addChild(Lain);
+
+		//stage.addChild(dRoom);
+
+
+		var el_loader = document.getElementById('loader');
+		el_loader.parentNode.removeChild(el_loader);
+		document.body.appendChild(renderer.view);
+		requestAnimFrame(animate);
+	};
+
+	this.load = function() {
+		for(var i = start; i <= end; i++) {
+			var name = 'img/'+ i +'.png';
+			var loader = new PIXI.ImageLoader(name, crossorigin);
+
+			loader.addEventListener('loaded', (function(i, name, scope) {
+				return function(event) {
+					var lo = event.content;
+					console.log('loaded[%d] %s',
+						(++count) - start,
+						name,
+						lo.texture);
+					if(count > end) {
+						console.groupEnd();
+						scope.onEnd.call(scope); 
+					}
+				};
+			})(i, name, this) );
+
+			loader.load();
+		}
+	};
 };
 
 var l = new AllLoader();
-
-var la = null;
-var dRoom = null;
-
-l.onEnd = function() {
-	console.warn('END');
-	//var r = new Room(stage);
-	dRoom = new DressRoom();
-	stage.addChild(dRoom.bg);
-	console.warn('dRoom');
-
-	//la = new Lain();
-	console.warn('lain');
-
-	Lain.position.x = 300-100;
-	Lain.position.y = 105;
-	stage.addChild(Lain);
-/*
-	xx = new LainMovable('nude', lain.nude);
-	stage.addChild(xx.moveRight);
-	xx.moveRight.animationSpeed = 0.04;
-	xx.moveRight.play();
-	*/
-
-	stage.addChild(dRoom);
-
-	var el_loader = document.getElementById('loader');
-	el_loader.parentNode.removeChild(el_loader);
-	document.body.appendChild(renderer.view);
-	requestAnimFrame(animate);
-};
 
 l.load();
 

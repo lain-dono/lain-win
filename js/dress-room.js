@@ -1,13 +1,14 @@
 var DressRoom = function() {
 	PIXI.DisplayObjectContainer.call(this);
 
-	var bg = PIXI.Texture.fromFrame('img/'+ 128 +'.png');
-	this.bg = new PIXI.Sprite(bg);
+	//var bg = PIXI.Texture.fromFrame('img/'+ 128 +'.png');
+	//this.bg = new PIXI.Sprite(bg);
 
-	for(var index in this.data) { 
-		if (this.data.hasOwnProperty(index)) {
-			var attr = this.data[index];
+	for(var index in lain) { 
+		if (lain.hasOwnProperty(index)) {
+			var attr = lain[index].dress;
 			console.log(index, attr);
+			if(!attr) continue;
 
 			attr.sprite = new Clothes(index, attr.img, attr.x, attr.y);
 			this.addChild(attr.sprite);
@@ -22,7 +23,7 @@ DressRoom.prototype.hideOnly = function(name) {
 	for(var i=0, len = this.children.length; i<len; i++) {
 		var obj = this.children[i];
 		obj.visible = obj.name != name;
-	}	
+	}
 };
 
 DressRoom.prototype.onUp = function(c) {
@@ -38,7 +39,7 @@ DressRoom.prototype.onUp = function(c) {
 	c.defaultPos();
 };
 
-DressRoom.prototype.data = {
+/*DressRoom.prototype.data = {
 	sweater: {
 		img: 250,
 		x: 110,
@@ -76,19 +77,21 @@ DressRoom.prototype.data = {
 		x: 30,
 		y: 190,
 	},
-};
+};*/
 
 var Clothes = function(name, img, x, y) {
+	var texture = PIXI.Texture.fromFrame('img/'+ img +'.png');
+	PIXI.Sprite.call(this, texture);
+
 	this.name = name;
 	this.img = img;
-	this.x = x;
-	this.y = y;
+
+	this.defaultPos = function() {
+		this.x = x;
+		this.y = y;
+	}
+
 	console.warn('Clothes',name, img, x, y);
-
-	var texture = PIXI.Texture.fromFrame('img/'+ img +'.png');
-
-
-	PIXI.Sprite.call(this, texture);
 
 	this.buttonMode = true;
 	this.setInteractive(true);
@@ -96,14 +99,9 @@ var Clothes = function(name, img, x, y) {
 	this.defaultPos();
 };
 
-Clothes.constructor = Clothes;
 Clothes.prototype = Object.create(PIXI.Sprite.prototype);
+Clothes.constructor = Clothes;
 
-Clothes.prototype.defaultPos = function() {
-	this.position.x = this.x;
-	this.position.y = this.y;
-};
- 
 Clothes.prototype.mousedown = function(event) {
 	this.drag = true;
 	this.lastPos = event.getLocalPosition(this.parent);
@@ -125,6 +123,6 @@ Clothes.prototype.mousemove = function(event) {
 	this.position.x += re.x;
 	this.position.y += re.y;
 	this.lastPos = pos;
-	console.log('drag', this.lastPos);
+	//console.log('drag', this.lastPos);
 };
 
